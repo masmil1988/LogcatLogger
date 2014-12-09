@@ -22,6 +22,7 @@ public class LogcatLogger {
 	private LogListener mLogListener = null;
 	private AtomicBoolean mStarted = new AtomicBoolean(false);
 
+	private static final String COMMAND_CLEAR_LOGCAT = "logcat -c";
 	private static final String COMMAND_LOG_LOGCAT = "logcat -v time";
 	private static final String LOGCAT_TIME_FORMAT = "MM-dd HH:mm:ss.SSS";
 	private static final String LOGCAT_TIME_FORMAT_WITH_YEAR = "yyyy-"+LOGCAT_TIME_FORMAT;
@@ -49,6 +50,14 @@ public class LogcatLogger {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				try {
+					Runtime.getRuntime().exec(COMMAND_CLEAR_LOGCAT).waitFor();
+				} catch (InterruptedException e) {
+					return;
+				} catch (IOException e) {
+					return;
+				}
+				
 				long lastTimestamp = System.currentTimeMillis();
 				Process process;
 				try {
