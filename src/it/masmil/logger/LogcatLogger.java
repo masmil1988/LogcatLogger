@@ -49,7 +49,7 @@ public class LogcatLogger {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				long lastTimestamp = 0;
+				long lastTimestamp = System.currentTimeMillis();
 				Process process;
 				try {
 					process = Runtime.getRuntime().exec(COMMAND_LOG_LOGCAT);
@@ -85,10 +85,6 @@ public class LogcatLogger {
 									String logType = matcher.group(2);
 									String log = matcher.group(3);
 									
-									if (log.equals("Manager initialized")) {
-										"a".charAt(0);
-									}
-
 									Date d;
 									try {
 										d = mDateFormatter.parse(time);
