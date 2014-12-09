@@ -4,7 +4,9 @@ LogcatLogger v0.01
 A class for intercepting the Logcat output in your app.
 
 Just create a new instance of LogcatLogger:
-  LogcatLogger logger = new LogcatLogger();
+```java
+LogcatLogger logger = new LogcatLogger();
+```
 
 Add the tags for which you want to be notified:
   logger.addTag("MY_TAG");
