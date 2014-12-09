@@ -8,12 +8,12 @@ Just create a new instance of LogcatLogger:
 LogcatLogger logger = new LogcatLogger();
 ```
 
-Add the tags for which you want to be notified:
+Add tags for which you want to be notified:
 ```java
 logger.addTag("MY_TAG");
 ```
 
-Set the listener on which you want to receive logs:
+Set the listener on which you want to receive logs. You will be notified on this listener ONLY for the tags you've added in the previous step.
 ```java
 LogListener myListener = new LogListener() {
 	@Override
