@@ -84,6 +84,10 @@ public class LogcatLogger {
 									String time = Calendar.getInstance().get(Calendar.YEAR)+"-"+matcher.group(1);
 									String logType = matcher.group(2);
 									String log = matcher.group(3);
+									
+									if (log.equals("Manager initialized")) {
+										"a".charAt(0);
+									}
 
 									Date d;
 									try {
