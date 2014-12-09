@@ -1,4 +1,4 @@
-LogcatLogger v0.01
+LogcatLogger
 ============
 
 A class for intercepting the Logcat output in your app.
