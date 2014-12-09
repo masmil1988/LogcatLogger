@@ -14,12 +14,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogcatLogger {
 	private LogListener mLogListener = null;
-	private boolean mStarted = false;
+	private AtomicBoolean mStarted = new AtomicBoolean(false);
 
 	private static final String COMMAND_LOG_LOGCAT = "logcat -v time";
 	private static final String LOGCAT_TIME_FORMAT = "MM-dd HH:mm:ss.SSS";
@@ -42,6 +43,9 @@ public class LogcatLogger {
 	}
 
 	public void startLogging() {
+		if (mStarted.getAndSet(true))
+			return;
+		
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -57,7 +61,7 @@ public class LogcatLogger {
 				StringBuilder logBuilder=new StringBuilder();
 
 				HashSet<String> logsForTimestamp = new HashSet<String>();
-				while (mStarted) {
+				while (mStarted.get()) {
 					String lineRead;
 					try {
 						lineRead = bufferedReader.readLine();
@@ -121,6 +125,6 @@ public class LogcatLogger {
 	}
 
 	public void stopLogging() {
-		mStarted = false;
+		mStarted.set(false);
 	}
 }
