@@ -45,69 +45,76 @@ public class LogcatLogger {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				long lastTimestamp = 0;
+				Process process;
 				try {
-					long lastTimestamp = System.currentTimeMillis();
-					Process process = Runtime.getRuntime().exec(COMMAND_LOG_LOGCAT);
-					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+					process = Runtime.getRuntime().exec(COMMAND_LOG_LOGCAT);
+				} catch (IOException e) {
+					return;
+				}
+				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-					StringBuilder logBuilder=new StringBuilder();
-					String lineRead = "";
+				StringBuilder logBuilder=new StringBuilder();
 
-					HashSet<String> logsForTimestamp = new HashSet<String>();
-					while (mStarted | (lineRead = bufferedReader.readLine()) != null) {
-						logBuilder.append("\n"+lineRead);
-						String toPrint = logBuilder.toString().trim();
+				HashSet<String> logsForTimestamp = new HashSet<String>();
+				while (mStarted) {
+					String lineRead;
+					try {
+						lineRead = bufferedReader.readLine();
+					} catch (IOException e) {
+						continue;
+					}
+					
+					logBuilder.append("\n"+lineRead);
+					String toPrint = logBuilder.toString().trim();
 
-						if (toPrint.length() > 0) {
-							String[] lines = toPrint.split("\\n");
+					if (toPrint.length() > 0) {
+						String[] lines = toPrint.split("\\n");
 
-							for (String line: lines) {
-								for (String tag: mTags) {
-									String patternToMatch = LOGCAT_TIME_PATTERN+" (.)/"+tag+" *\\(.+\\): (.*)$";
-									Pattern pattern = Pattern.compile(patternToMatch);
-									Matcher matcher = pattern.matcher(line);
-									if (matcher.find()) {
-										String time = Calendar.getInstance().get(Calendar.YEAR)+"-"+matcher.group(1);
-										String logType = matcher.group(2);
-										String log = matcher.group(3);
+						for (String line: lines) {
+							for (String tag: mTags) {
+								String patternToMatch = LOGCAT_TIME_PATTERN+" (.)/"+tag+" *\\(.+\\): (.*)$";
+								Pattern pattern = Pattern.compile(patternToMatch);
+								Matcher matcher = pattern.matcher(line);
+								if (matcher.find()) {
+									String time = Calendar.getInstance().get(Calendar.YEAR)+"-"+matcher.group(1);
+									String logType = matcher.group(2);
+									String log = matcher.group(3);
 
-										Date d;
+									Date d;
+									try {
+										d = mDateFormatter.parse(time);
+									} catch (ParseException e) {
+										d = new Date();
+									}
+									long timestamp = d.getTime();
+									line = line.split(".*"+tag+" *\\(.+\\): ")[1];
+									boolean takeLog = false;
+
+									if (lastTimestamp < timestamp) {
+										lastTimestamp = timestamp;
+										logsForTimestamp.clear();
+										logsForTimestamp.add(log);
+										takeLog = true;
+									} else if (lastTimestamp == timestamp && !logsForTimestamp.contains(log)) {
+										logsForTimestamp.add(log);
+										takeLog = true;
+									}
+
+									if (takeLog && mLogListener != null) {
 										try {
-											d = mDateFormatter.parse(time);
-										} catch (ParseException e) {
-											d = new Date();
-										}
-										long timestamp = d.getTime();
-										line = line.split(".*"+tag+" *\\(.+\\): ")[1];
-										boolean takeLog = false;
-
-										if (lastTimestamp < timestamp) {
-											lastTimestamp = timestamp;
-											logsForTimestamp.clear();
-											logsForTimestamp.add(log);
-											takeLog = true;
-										} else if (lastTimestamp == timestamp && !logsForTimestamp.contains(log)) {
-											logsForTimestamp.add(log);
-											takeLog = true;
-										}
-
-										if (takeLog && mLogListener != null) {
-											try {
-												mLogListener.onLog(tag, LogType.valueOf(logType), timestamp, log);
-											} catch (IllegalArgumentException e) {
-												// thrown if logType is not expected in the enum LogType
-											}
+											mLogListener.onLog(tag, LogType.valueOf(logType), timestamp, log);
+										} catch (IllegalArgumentException e) {
+											// thrown if logType is not expected in the enum LogType
 										}
 									}
 								}
 							}
 						}
 					}
-
-					process.destroy();
-				} catch (IOException e) {
-					"a".charAt(0);
 				}
+
+				process.destroy();
 			}
 		});
 		thread.start();
