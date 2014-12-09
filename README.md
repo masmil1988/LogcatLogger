@@ -1,7 +1,7 @@
 LogcatLogger
 ============
 
-A class for intercepting the Logcat output in your app.
+A class for intercepting the LogCat output in your app.
 
 Just create a new instance of LogcatLogger:
 ```java
