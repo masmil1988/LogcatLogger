@@ -101,7 +101,12 @@ public class LogcatLogger {
 										d = new Date();
 									}
 									long timestamp = d.getTime();
-									line = line.split(".*"+tag+" *\\(.+\\): ")[1];
+									String[] splittedParts = line.split(".*"+tag+" *\\(.+\\): ");
+									if (splittedParts.length > 0)
+										line = splittedParts[1];
+									else
+										line = "";
+
 									boolean takeLog = false;
 
 									if (lastTimestamp < timestamp) {
