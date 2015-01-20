@@ -67,7 +67,6 @@ public class LogcatLogger {
 				}
 				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-				HashSet<String> logsForTimestamp = new HashSet<String>();
 				while (mStarted.get()) {
 					String line;
 					try {
@@ -99,19 +98,7 @@ public class LogcatLogger {
 								else
 									line = "";
 
-								boolean takeLog = false;
-
-								if (lastTimestamp < timestamp) {
-									lastTimestamp = timestamp;
-									logsForTimestamp.clear();
-									logsForTimestamp.add(log);
-									takeLog = true;
-								} else if (lastTimestamp == timestamp && !logsForTimestamp.contains(log)) {
-									logsForTimestamp.add(log);
-									takeLog = true;
-								}
-
-								if (takeLog && mLogListener != null) {
+								if (mLogListener != null) {
 									try {
 										mLogListener.onLog(tag, LogType.valueOf(logType), timestamp, log);
 									} catch (IllegalArgumentException e) {
